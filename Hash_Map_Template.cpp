@@ -79,7 +79,7 @@ class LinkedList{
 public:
     LinkedList() {
         head = nullptr;
-        n = 0
+        n = 0;
     };
     ~LinkedList() {
         clear();
@@ -160,6 +160,7 @@ public:
     void insert(const KeyType &key, const ValueType &value) {
         if (head == nullptr) {
             head = new Node(key, value);
+            n++;
             return;
         }
         Node* curr = head;
@@ -210,11 +211,15 @@ public:
     };
 
     const ValueType &at(const KeyType &key) const {
-        const ValueType* temp = find(key);
-        if (temp == nullptr) {
-            throw std::out_of_range("Key not found");
+        Node* curr = head;
+        while (curr != nullptr) {
+            if (curr->key == key) {
+                return (curr->value);
+            }
+            curr = curr->next;
         }
-        return *temp;
+        throw std::out_of_range("Key not found");
+
     };
     ValueType &at(const KeyType &key) {
         ValueType* temp = find(key);
@@ -247,11 +252,13 @@ public:
             if (curr->value != other_curr->value || curr->key != other_curr->key) {
                 return false;
             }
+            curr = curr->next;
+            other_curr = other_curr->next;
         }
         return true;
     };
     bool operator!=(const LinkedList &other) const {
-        return !(*this == other)
+        return !(*this == other);
     };
 
     [[nodiscard]] bool contains(const KeyType &key) const {
@@ -377,9 +384,12 @@ public:
 template<> class HashFunctor<float>{
 public:
     size_t operator()(float key) const {
-        size_t bits = 0;
-        memcpy(&bits, &key, sizeof(float));
-        return bits;
+        union {
+            float f;
+            unsigned int i;
+        } u;
+        u.f = key;
+        return static_cast<size_t>(u.i);
     }
 };
 
