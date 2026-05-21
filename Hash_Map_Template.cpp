@@ -161,7 +161,6 @@ public:
         Node* curr = head;
         while (curr != nullptr) {
             if (curr->key == key) {
-                curr->value = value;
                 return;
             }
             curr = curr->next;
@@ -296,9 +295,9 @@ template <size_t N, typename KeyType, typename ValueType, typename HashFunc>
 class HashMap{
 public:
     HashMap() = default;
-    ~HashMap() = default;
-    HashMap(const HashMap&) = default;
-    HashMap(HashMap&&) noexcept = default;
+    ~HashMap() {
+        clear();
+    };
 
     HashMap &operator=(const HashMap &other) {
         if (this == &other) {
@@ -343,11 +342,13 @@ public:
     };
     ValueType &operator[](const KeyType &key) {
         size_t index = hash(key) % N;
-        if (!buckets[index].contains(key)) {
+        ValueType* found = buckets[index].find(key);
+        if (found == nullptr) {
             buckets[index].insert(key, ValueType());
+            found = buckets[index].find(key);
         }
-        return buckets[index].at(key);
-    };
+        return *found;
+    }
 
     bool operator==(const HashMap &other) const {
         for (size_t i = 0; i < N; i++) {
