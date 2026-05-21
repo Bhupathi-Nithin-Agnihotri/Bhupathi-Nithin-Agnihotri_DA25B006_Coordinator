@@ -243,7 +243,7 @@ public:
         return nullptr; 
     };
     const ValueType *find(const KeyType &key) const {
-        Node* curr = head;
+        const Node* curr = head;
 
         while (curr != nullptr) {
             if (curr->key == key) {
@@ -259,7 +259,7 @@ public:
         if (n != other.n) {
             return false;
         }
-        Node* curr = head;
+        const Node* curr = head;
         while (curr != nullptr) {
             const ValueType* val = other.find(curr->key);
             if (val == nullptr || *val != curr->value) {
@@ -297,6 +297,8 @@ class HashMap{
 public:
     HashMap() = default;
     ~HashMap() = default;
+    HashMap(const HashMap&) = default;
+    HashMap(HashMap&&) noexcept = default;
 
     HashMap &operator=(const HashMap &other) {
         if (this == &other) {
@@ -383,7 +385,7 @@ private:
 template<typename T>
 class HashFunctor{
 public:
-    size_t operator()(T Key) const;
+    size_t operator()(const T& Key) const;
 };
 
 template<> class HashFunctor<int>{
