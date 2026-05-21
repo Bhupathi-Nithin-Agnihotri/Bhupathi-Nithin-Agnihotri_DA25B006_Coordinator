@@ -211,15 +211,11 @@ public:
     };
 
     const ValueType &at(const KeyType &key) const {
-        Node* curr = head;
-        while (curr != nullptr) {
-            if (curr->key == key) {
-                return (curr->value);
-            }
-            curr = curr->next;
+        const ValueType* temp = find(key);
+        if (temp == nullptr) {
+            throw std::out_of_range("Key not found");
         }
-        throw std::out_of_range("Key not found");
-
+        return *temp;
     };
     ValueType &at(const KeyType &key) {
         ValueType* temp = find(key);
@@ -238,6 +234,18 @@ public:
         }
         return nullptr; 
     };
+    const ValueType *find(const KeyType &key) const {
+        Node* curr = head;
+
+        while (curr != nullptr) {
+            if (curr->key == key) {
+                return &(curr->value);
+            }
+            curr = curr->next;
+        }
+
+        return nullptr;
+    }
 
     bool operator==(const LinkedList &other) const {
         if (other.n != n) {
