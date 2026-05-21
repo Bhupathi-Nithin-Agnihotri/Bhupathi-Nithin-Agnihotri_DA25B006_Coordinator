@@ -77,33 +77,197 @@ private:
 template <typename KeyType, typename ValueType>
 class LinkedList{
 public:
-    LinkedList();
-    ~LinkedList();
+    LinkedList() {
+        head = nullptr;
+        n = 0
+    };
+    ~LinkedList() {
+        clear();
+    };
 
-    LinkedList(const LinkedList &other);
-    LinkedList(LinkedList &&other) noexcept;
-    LinkedList &operator=(const LinkedList &other);
-    LinkedList &operator=(LinkedList &&other) noexcept;
+    LinkedList(const LinkedList &other) {
+        Node* other_curr = other.head;
+        if (other_curr != nullptr) {
+            head = new Node(other_curr->key, other_curr->value);
+            other_curr = other_curr->next;
+        }
+        else {
+            n = 0;
+            head = nullptr;
+            return;
+        }
+        
+        Node* curr = head;
+        while (other_curr != nullptr) {
+            curr->next = new Node(other_curr->key, other_curr->value);
+            curr = curr->next;
+            other_curr = other_curr->next;
+        }
+        n = other.n;
+    };
+    LinkedList(LinkedList &&other) noexcept {
+        head = other.head;
+        n = other.n;
+        other.head = nullptr;
+        other.n = 0;
+    };
+    LinkedList &operator=(const LinkedList &other) {
+        if (this == &other) {
+            return *this;
+        }
 
-    void insert(const KeyType &key, const ValueType &value);
-    void erase(const KeyType &key);
-    void clear();
+        clear();
 
-    const ValueType &at(const KeyType &key) const;
-    ValueType &at(const KeyType &key);
-    ValueType *find(const KeyType &key);
+        if (other.head == nullptr) {
+            head = nullptr;
+            n = 0;
+            return *this;
+        }
 
-    bool operator==(const LinkedList &other) const;
-    bool operator!=(const LinkedList &other) const;
+        Node* other_curr = other.head;
 
-    [[nodiscard]] bool contains(const KeyType &key) const;
-    [[nodiscard]] size_t size() const;
+        head = new Node(other_curr->key, other_curr->value);
+        Node* curr = head;
+
+        other_curr = other_curr->next;
+
+        while (other_curr != nullptr) {
+            curr->next = new Node(other_curr->key, other_curr->value);
+
+            curr = curr->next;
+            other_curr = other_curr->next;
+        }
+
+        n = other.n;
+
+        return *this;
+    };
+    LinkedList &operator=(LinkedList &&other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        clear();
+
+        head = other.head;
+        n = other.n;
+
+        other.head = nullptr;
+        other.n = 0;
+
+        return *this;
+    };
+
+    void insert(const KeyType &key, const ValueType &value) {
+        if (head == nullptr) {
+            head = new Node(key, value);
+            return;
+        }
+        Node* curr = head;
+        Node* next = head->next;
+        while (next != nullptr) {
+            curr = next;
+            next = next->next;
+        }
+        curr->next = new Node(key, value);
+        n++;
+    };
+    void erase(const KeyType &key) {
+        if (head == nullptr) {
+            return;
+        }
+        if (head->key == key) {
+            Node* temp = head;
+            head = temp->next;
+            delete temp;
+            n--;
+            return;
+        }
+        Node* prev = nullptr;
+        Node* curr = head;
+        while (curr != nullptr) {
+            if (curr->key != key) {
+                prev = curr;
+                curr = curr->next;
+            }
+            else {
+                prev->next = curr->next;
+                delete curr;
+                n--;
+                break;
+            }
+        }
+    };
+    void clear() {
+        Node* curr = head;
+        while (curr != nullptr) {
+            Node* temp = curr->next;
+            delete curr;
+            curr = temp;
+        }
+
+        head = nullptr;
+        n = 0;
+    };
+
+    const ValueType &at(const KeyType &key) const {
+        const ValueType* temp = find(key);
+        if (temp == nullptr) {
+            throw std::out_of_range("Key not found");
+        }
+        return *temp;
+    };
+    ValueType &at(const KeyType &key) {
+        ValueType* temp = find(key);
+        if (temp == nullptr) {
+            throw std::out_of_range("Key not found");
+        }
+        return *temp;
+    };
+    ValueType *find(const KeyType &key) {
+        Node* curr = head;
+        while (curr != nullptr) {
+            if (curr->key == key) {
+                return &(curr->value);
+            }
+            curr = curr->next;
+        }
+        return nullptr; 
+    };
+
+    bool operator==(const LinkedList &other) const {
+        if (other.n != n) {
+            return false;
+        }
+        if (head == nullptr) {
+            return true;
+        }
+        Node* other_curr = other.head;
+        Node* curr = head;
+        while (curr != nullptr) {
+            if (curr->value != other_curr->value || curr->key != other_curr->key) {
+                return false;
+            }
+        }
+        return true;
+    };
+    bool operator!=(const LinkedList &other) const {
+        return !(*this == other)
+    };
+
+    [[nodiscard]] bool contains(const KeyType &key) const {
+        ValueType* temp = find(key);
+        return temp != nullptr;
+    };
+    [[nodiscard]] size_t size() const {
+        return n;
+    };
 
 private:
     struct Node{
         KeyType key;
         ValueType value;
         Node *next;
+        Node(const KeyType& k, const ValueType& v): key(k), value(v), next(nullptr) {}
     };
     Node *head = nullptr;
     size_t n = 0;
@@ -151,26 +315,26 @@ public:
 
 
 // ---------- UnComment the macros as you go on, this allows for partial submissions ----------///
-// #define TEST_CASE_1
-// #define TEST_CASE_2
-// #define TEST_CASE_3
-// #define TEST_CASE_4
-// #define TEST_CASE_5
-// #define TEST_CASE_6
-// #define TEST_CASE_7
-// #define TEST_CASE_8
-// #define TEST_CASE_9
-// #define TEST_CASE_10
-// #define TEST_CASE_11
-// #define TEST_CASE_12
-// #define TEST_CASE_13
-// #define TEST_CASE_14
-// #define TEST_CASE_15
-// #define TEST_CASE_16
-// #define TEST_CASE_17
-// #define TEST_CASE_18
-// #define TEST_CASE_19
-// #define TEST_CASE_20
+#define TEST_CASE_1
+#define TEST_CASE_2
+#define TEST_CASE_3
+#define TEST_CASE_4
+#define TEST_CASE_5
+#define TEST_CASE_6
+#define TEST_CASE_7
+#define TEST_CASE_8
+#define TEST_CASE_9
+#define TEST_CASE_10
+#define TEST_CASE_11
+#define TEST_CASE_12
+#define TEST_CASE_13
+#define TEST_CASE_14
+#define TEST_CASE_15
+#define TEST_CASE_16
+#define TEST_CASE_17
+#define TEST_CASE_18
+#define TEST_CASE_19
+#define TEST_CASE_20
 
 ///---------------------- DO NOT TOUCH/MODIFY BELOW THIS LINE, IT'S FOR HACKERRANK TESTING ----------------------///
 ///------------------ IF YOU DO SO THE CURSE OF KING MIDUS WILL TURN IT INTO BROKEN CODE :P------------------///
