@@ -407,7 +407,7 @@ public:
 
 template<> class HashFunctor<std::string>{
 public:
-    size_t operator()(std::string& key) const {
+    size_t operator()(const std::string& key) const {
         size_t hash = 0;
         for (char c : key) {
             hash = hash * 31 + static_cast<size_t>(c);
