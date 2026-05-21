@@ -158,18 +158,26 @@ public:
     };
 
     void insert(const KeyType &key, const ValueType &value) {
-        if (head == nullptr) {
-            head = new Node(key, value);
-            n++;
-            return;
-        }
         Node* curr = head;
-        Node* next = head->next;
-        while (next != nullptr) {
-            curr = next;
-            next = next->next;
+        while (curr != nullptr) {
+            if (curr->key == key) {
+                curr->value = value;
+                return;
+            }
+            curr = curr->next;
         }
-        curr->next = new Node(key, value);
+
+        Node* new_node = new Node(key, value);
+        if (head == nullptr) {
+            head = new_node;
+        }
+        else {
+            curr = head;
+            while (curr->next != nullptr) {
+                curr = curr->next;
+            }
+            curr->next = new_node;
+        }
         n++;
     };
     void erase(const KeyType &key) {
@@ -248,20 +256,16 @@ public:
     }
 
     bool operator==(const LinkedList &other) const {
-        if (other.n != n) {
+        if (n != other.n) {
             return false;
         }
-        if (head == nullptr) {
-            return true;
-        }
-        Node* other_curr = other.head;
         Node* curr = head;
         while (curr != nullptr) {
-            if (curr->value != other_curr->value || curr->key != other_curr->key) {
+            const ValueType* val = other.find(curr->key);
+            if (val == nullptr || *val != curr->value) {
                 return false;
             }
             curr = curr->next;
-            other_curr = other_curr->next;
         }
         return true;
     };
@@ -270,7 +274,7 @@ public:
     };
 
     [[nodiscard]] bool contains(const KeyType &key) const {
-        ValueType* temp = find(key);
+        const ValueType* temp = find(key);
         return temp != nullptr;
     };
     [[nodiscard]] size_t size() const {
@@ -403,7 +407,7 @@ public:
 
 template<> class HashFunctor<std::string>{
 public:
-    size_t operator()(std::string key) const {
+    size_t operator()(std::string& key) const {
         size_t hash = 0;
         for (char c : key) {
             hash = hash * 31 + static_cast<size_t>(c);
