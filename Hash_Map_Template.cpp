@@ -276,26 +276,84 @@ private:
 template <size_t N, typename KeyType, typename ValueType, typename HashFunc>
 class HashMap{
 public:
-    HashMap();
-    ~HashMap();
+    HashMap() = default;
+    ~HashMap() = default;
 
-    HashMap &operator=(const HashMap &other);
-    HashMap &operator=(HashMap &&other) noexcept;
+    HashMap &operator=(const HashMap &other) {
+        if (this == &other) {
+            return *this;
+        }
+        for (size_t i = 0; i < N; i++) {
+            buckets[i] = other.buckets[i];
+        }
+        return *this;
+    };
+    HashMap &operator=(HashMap &&other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        for (size_t i = 0; i < N; i++) {
+            buckets[i] = std::move(other.buckets[i]);
+        }
+        return *this;
+    };
 
-    void insert(const KeyType &key, const ValueType &value);
-    void erase(const KeyType &key);
-    void clear();
+    void insert(const KeyType &key, const ValueType &value) {
+        size_t index = hash(key) % N;
+        buckets[index].insert(key, value);
+    };
+    void erase(const KeyType &key) {
+        size_t index = hash(key) % N;
+        buckets[index].erase(key);
+    };
+    void clear() {
+        for (size_t i = 0; i < N; i++) {
+            buckets[i].clear();
+        }
+    };
 
-    const ValueType &at(const KeyType &key) const;
-    ValueType &at(const KeyType &key);
-    ValueType &operator[](const KeyType &key);
+    const ValueType &at(const KeyType &key) const {
+        size_t index = hash(key) % N;
+        return buckets[index].at(key);
+    };
+    ValueType &at(const KeyType &key) {
+        size_t index = hash(key) % N;
+        return buckets[index].at(key);
+    };
+    ValueType &operator[](const KeyType &key) {
+        size_t index = hash(key) % N;
+        if (!buckets[index].contains(key)) {
+            buckets[index].insert(key, ValueType());
+        }
+        return buckets[index].at(key);
+    };
 
-    bool operator==(const HashMap &other) const;
-    bool operator!=(const HashMap &other) const;
+    bool operator==(const HashMap &other) const {
+        for (size_t i = 0; i < N; i++) {
+            if (buckets[i] != other.buckets[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
+    bool operator!=(const HashMap &other) const {
+        return !(*this == other);
+    };
 
-    [[nodiscard]] bool contains(const KeyType &key) const;
-    [[nodiscard]] bool empty() const;
-    [[nodiscard]] size_t size() const;
+    [[nodiscard]] bool contains(const KeyType &key) const {
+        size_t index = hash(key) % N;
+        return buckets[index].contains(key);
+    };
+    [[nodiscard]] bool empty() const {
+        return size() == 0;
+    };
+    [[nodiscard]] size_t size() const {
+        size_t total_size = 0;
+        for (size_t i = 0; i<N; i++) {
+            total_size += buckets[i].size();
+        }
+        return total_size;
+    };
 
 private:
     HashFunc hash;
@@ -307,6 +365,33 @@ template<typename T>
 class HashFunctor{
 public:
     size_t operator()(T Key) const;
+};
+
+template<> class HashFunctor<int>{
+public:
+    size_t operator()(int key) const {
+        return static_cast<size_t>(key);
+    }
+};
+
+template<> class HashFunctor<float>{
+public:
+    size_t operator()(float key) const {
+        size_t bits = 0;
+        memcpy(&bits, &key, sizeof(float));
+        return bits;
+    }
+};
+
+template<> class HashFunctor<std::string>{
+public:
+    size_t operator()(std::string key) const {
+        size_t hash = 0;
+        for (char c : key) {
+            hash = hash * 31 + static_cast<size_t>(c);
+        }
+        return hash;
+    }
 };
 
 ///---------------------- DO NOT TOUCH/MODIFY ABOVE THIS LINE, IT'S FOR YOUR REFERENCE ----------------------///
